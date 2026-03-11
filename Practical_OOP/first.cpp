@@ -32,39 +32,85 @@ using namespace std;
 
         48:32
 
+        MEMORY LEAKAGE : when you keep creating objects and do not delete them using destructor they keep getting
+
+        stored which leads to memory leakage.
+
 
 
 
 
 */
+// class A
+// {
+
+// public:
+//     A(int a)
+//     {
+//         a_ = a;
+//     }
+//     int GetA()
+//     {
+//         return a_;
+//     }
+//     ~A()
+//     {
+//         cout << "THIS IS WHERE DESTRUCTOR IS CALLED.." << endl;
+//     }
+
+// private:
+//     int a_;
+// };
+// // INHERITENCE..
+// class A
+// {
+// public:
+//     A()
+//     {
+//         cout << "CONSTRUCTOR OF A IS CALLED" << endl;
+//     }
+//     ~A()
+//     {
+//         cout << "DESTRUCTOR OF A IS CALLED" << endl;
+//     }
+// };
+// class B : public A
+// {
+// public:
+//     B()
+//     {
+//         cout << "CONSTRUCTOR OF B IS CALLED" << endl;
+//     }
+//     ~B()
+//     {
+//         cout << "DESTRUCTOR OF B IS CALLED" << endl;
+//     }
+// };
 class A
 {
-
 public:
-    A(int a)
-    {
-        a_ = a;
-    }
-    int GetA()
-    {
-        return a_;
-    }
-    ~A()
-    {
-        cout << "THIS IS WHERE DESTRUCTOR IS CALLED.." << endl;
-    }
+    int public_a = 10;
 
 private:
-    int a_;
+    int private_a = 5;
+
+protected:
+    int protected_a = 2;
+};
+class B : public A
+{
+public:
+    void fun()
+    {
+        cout << protected_a << endl;
+    }
 };
 signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    {
-        A a(3);
-        cout << (a.GetA()) << endl;
-    }
-
-    cout << ("THIS IS THE LAST LINE IN MAIN..") << endl;
+    A a;
+    B b;
+    b.fun();
+    cout << a.public_a << endl;
 }
