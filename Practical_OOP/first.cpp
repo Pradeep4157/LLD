@@ -86,31 +86,130 @@ using namespace std;
 //         cout << "DESTRUCTOR OF B IS CALLED" << endl;
 //     }
 // };
-class A
+// class A
+// {
+// public:
+//     int public_a = 10;
+
+// private:
+//     int private_a = 5;
+
+// protected:
+//     int protected_a = 2;
+// };
+// class B : public A
+// {
+// public:
+//     void fun()
+//     {
+//         cout << protected_a << endl;
+//     }
+// };
+
+// TYPES OF INHERITENCE :
+// if you inherit using public then all the data types of parent that are accessible, their type doesnt change..
+// EG :
+// class A
+// {
+// public:
+//     int public_int_a;
+
+// private:
+//     int private_int_a;
+
+// protected:
+//     int protected_int_a;
+// };
+// class B : public A
+// {
+//     // here the data types of parent that are accesssible still remain the same..
+//     // public && protected are still the same..
+// };
+// class B : private A
+// {
+//     // here all the data types of parent that are accesssible become private..
+//     // public && protected variables -> private..
+// };
+// class B : protected A
+// {
+//     // here again all the data types that are accessible become protected..
+//     // public && protected variables -> protected..
+// };
+// when we create object of child / derived class how do we initialise the values of parent / base class..
+// we can do that using constructor of parent called in constructor of child class..
+// EG :
+// class A
+// {
+// public:
+//     int public_int_a;
+//     A(int public_a, int private_a, int protected_a) : public_int_a(public_a), private_int_a(private_a), protected_int_a(protected_a)
+//     {
+//         cout << "CONSTRUCTOR OF A IS CALLED.." << endl;
+//     }
+
+// private:
+//     int private_int_a;
+
+// protected:
+//     int protected_int_a;
+// };
+// class B : public A
+// {
+// public:
+//     B(int a, int b, int c) : A(a, b, c)
+//     {
+//         cout << "Constructor of B is called..." << endl;
+//     }
+// };
+// class A
+// {
+// public:
+//     A(int a) : public_int_a(a) {}
+//     void fun()
+//     {
+//         cout << public_int_a << endl;
+//     }
+//     int public_int_a;
+// };
+
+//                                        POLYMORPHISM..
+
+// the idea is to use a general function for all the chidren of a base / parent class instead of creating multiple
+// functions for all the children..
+
+class Animal
 {
 public:
-    int public_a = 10;
-
-private:
-    int private_a = 5;
-
-protected:
-    int protected_a = 2;
-};
-class B : public A
-{
-public:
-    void fun()
+    virtual void Sound()
     {
-        cout << protected_a << endl;
+        cout << "No  Sound" << endl;
     }
 };
+
+class Dog : public Animal
+{
+public:
+    void Sound()
+    {
+        cout << "Bhow Bhow" << endl;
+    }
+};
+class Cat : public Animal
+{
+public:
+    void Sound()
+    {
+        cout << "Meow Meow Meow Meow " << endl;
+    }
+};
+void PlaySound(Animal &animal)
+{
+    animal.Sound();
+}
 signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    A a;
-    B b;
-    b.fun();
-    cout << a.public_a << endl;
+    Dog dog;
+    PlaySound(dog);
 }
