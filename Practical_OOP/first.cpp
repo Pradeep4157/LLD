@@ -177,39 +177,77 @@ using namespace std;
 // the idea is to use a general function for all the chidren of a base / parent class instead of creating multiple
 // functions for all the children..
 
-class Animal
-{
-public:
-    virtual void Sound()
-    {
-        cout << "No  Sound" << endl;
-    }
-};
+// class Animal
+// {
+// public:
+//     virtual void Sound()
+//     {
+//         cout << "No  Sound" << endl;
+//     }
+// };
 
-class Dog : public Animal
+// class Dog : public Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Bhow Bhow" << endl;
+//     }
+// };
+// class Cat : public Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Meow Meow Meow Meow " << endl;
+//     }
+// };
+// void PlaySound(Animal &animal)
+// {
+//     animal.Sound();
+// }
+// class Base
+// {
+// public:
+//     Base(int a) : a_(a)
+//     {
+//         cout << "BASE CLASS CALLED" << endl;
+//     }
+//     int a_;
+// };
+// class Derived : public Base
+// {
+// public:
+//     Derived(int a, int b) : b_(b), Base(a)
+//     {
+//         cout << "DERIVED CLASS CALLED" << endl;
+//     }
+//     int b_;
+//     void print()
+//     {
+//         cout << a_ << " " << b_ << endl;
+//     }
+// };
+void solve()
 {
-public:
-    void Sound()
-    {
-        cout << "Bhow Bhow" << endl;
-    }
-};
-class Cat : public Animal
-{
-public:
-    void Sound()
-    {
-        cout << "Meow Meow Meow Meow " << endl;
-    }
-};
-void PlaySound(Animal &animal)
-{
-    animal.Sound();
+    // reference..
+    int a = 10;
+    int *ptr = &a;
+    // points to the same memory where a is allocated space..
+    int &b = a;
+    cout << a << " " << b << " " << *ptr << endl;
+    // so if i change anyone both will get changed..
+    b = 15;
+    cout << a << " " << b << " " << *ptr << endl;
+    // pointer : is used to point to the address of a variable and we can use it to change and print the
+    // variable by dereferencing it..
+
+    *ptr = 20;
+    cout << a << " " << b << " " << *ptr << endl;
 }
 signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    Dog dog;
-    PlaySound(dog);
+    solve();
 }
