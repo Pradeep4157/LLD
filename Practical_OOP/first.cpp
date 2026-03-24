@@ -206,26 +206,107 @@ using namespace std;
 //         cout << a_ << " " << b_ << endl;
 //     }
 // };
-void solve()
-{
-    // reference..
-    int a = 10;
-    int *ptr;
-    // points to the same memory where a is allocated space..
-    int &b = a;
-    cout << a << " " << b << " " << *ptr << endl;
-    // so if i change anyone both will get changed..
-    b = 15;
-    cout << a << " " << b << " " << *ptr << endl;
-    // pointer : is used to point to the address of a variable and we can use it to change and print the
-    // variable by dereferencing it..
+// void solve()
+// {
+//     // reference..
+//     int a = 10;
+//     int *ptr;
+//     // points to the same memory where a is allocated space..
+//     int &b = a;
+//     cout << a << " " << b << " " << *ptr << endl;
+//     // so if i change anyone both will get changed..
+//     b = 15;
+//     cout << a << " " << b << " " << *ptr << endl;
+//     // pointer : is used to point to the address of a variable and we can use it to change and print the
+//     // variable by dereferencing it..
 
-    *ptr = 20;
-    cout << a << " " << b << " " << *ptr << endl;
-}
+//     *ptr = 20;
+//     cout << a << " " << b << " " << *ptr << endl;
+// }
+// class Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "No Sound" << endl;
+//     }
+// };
+// class Cat : public Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Meow Meow " << endl;
+//     }
+// };
+// class Kitten : public Cat
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Small Meow Meow Meow Meow" << endl;
+//     }
+// };
+
+//     // OVERRIDE : this means that the current function is supposed to override some parent virtual function..
+
+// class Animal
+// {
+// public:
+//     virtual void Sound()
+//     {
+//         cout << "No Sound" << endl;
+//     }
+// };
+// class Cat : public Animal
+// {
+// public:
+//     void Sound() override
+//     {
+//         cout << "Meow Meow " << endl;
+//     }
+// };
+// class Kitten : public Cat
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Small Meow Meow Meow Meow" << endl;
+//     }
+// };
+// void playSound(Animal &animal)
+// {
+//     animal.Sound();
+// }
+
+// // FINAL : this is used when we do not expect this function to be overridden by any children of this class.
+// class Animal
+// {
+// public:
+//     virtual void Sound()
+//     {
+//         cout << "No Sound" << endl;
+//     }
+// };
+// class Cat : public Animal
+// {
+// public:
+//     void Sound() final
+//     {
+//         cout << "Meow Meow " << endl;
+//     }
+// };
+// class Kitten : public Cat
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Small Meow Meow Meow Meow" << endl;
+//     }
+// };
+
 signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    solve();
 }
