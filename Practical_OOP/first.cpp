@@ -6,7 +6,7 @@ using namespace std;
 
         https://maang.in/playlists/Live-Session-3676?resourceUrl=cs95-cp543-pl3676-rs8810&returnUrl=%5B%22%2Fcourses%2FLow-level-Design-Live-Bootcamp-95%3Ftab%3Dchapters%22%5D
 
-    LLD SESSION 3 : 01:21:57
+    LLD SESSION 3 : 01:37:55
 
         MEMORY LEAKAGE : when you keep creating objects and do not delete them using destructor they keep getting
 
@@ -305,8 +305,53 @@ using namespace std;
 //     }
 // };
 
+// POLYMORPHISM : when we use heap object allocation, objects stored on heap arent deleted automatically..
+// even if we use destructors it is necessary to make it virtual otherwise only the parent class gets del and not
+// the child classes.
+class Animal
+{
+public:
+    void Sound()
+    {
+        cout << "No Sound" << endl;
+    }
+    ~Animal()
+    {
+        cout << "DESTRUCTOR OF ANIMAL IS CALLED" << endl;
+    }
+};
+class Cat : public Animal
+{
+public:
+    void Sound()
+    {
+        cout << "Meow Meow " << endl;
+    }
+    ~Cat()
+    {
+        cout << "DESTRUCTOR OF CAT IS CALLED" << endl;
+    }
+};
+class Kitten : public Cat
+{
+public:
+    void Sound()
+    {
+        cout << "Small Meow Meow Meow Meow" << endl;
+    }
+    ~Kitten()
+    {
+        cout << "DESTRUCTOR OF KITTEN IS CALLED" << endl;
+    }
+};
+
 signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
+    Cat *cat_ptr = new Cat();
+    Animal &animal_ref = *cat_ptr;
+    Animal *animal_ptr = &animal_ref;
+    animal_ptr->Sound();
+    return 0;
 }
