@@ -308,40 +308,157 @@ using namespace std;
 // POLYMORPHISM : when we use heap object allocation, objects stored on heap arent deleted automatically..
 // even if we use destructors it is necessary to make it virtual otherwise only the parent class gets del and not
 // the child classes.
-class Animal
+// class Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "No Sound" << endl;
+//     }
+//     ~Animal()
+//     {
+//         cout << "DESTRUCTOR OF ANIMAL IS CALLED" << endl;
+//     }
+// };
+// class Cat : public Animal
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Meow Meow " << endl;
+//     }
+//     ~Cat()
+//     {
+//         cout << "DESTRUCTOR OF CAT IS CALLED" << endl;
+//     }
+// };
+// class Kitten : public Cat
+// {
+// public:
+//     void Sound()
+//     {
+//         cout << "Small Meow Meow Meow Meow" << endl;
+//     }
+//     ~Kitten()
+//     {
+//         cout << "DESTRUCTOR OF KITTEN IS CALLED" << endl;
+//     }
+// };
+
+// /*
+//     OBJECT SLICING :
+
+//         so when we create an object and copy content
+
+//         from another object (it is necessary that the object from
+
+//         which we are copying should be either equal or some derived object)
+
+//         , then all the class information of that object till the level of this new object will
+
+//         get copied in the new object.
+
+// */
+// class Base
+// {
+// public:
+//     int x;
+//     int y;
+//     virtual void A()
+//     {
+//         cout << "A function of Base is called " << endl;
+//     }
+//     void B()
+//     {
+//         cout << "B is called " << endl;
+//     }
+//     void C()
+//     {
+//         cout << "C is called" << endl;
+//     }
+//     void get_x()
+//     {
+//         cout << "VALUE OF X IS : " << x << endl;
+//     }
+//     void get_y()
+//     {
+//         cout << "VALUE OF Y IS : " << y << endl;
+//     }
+// };
+// class Derived : public Base
+// {
+// public:
+//     void A()
+//     {
+//         cout << "A function of derived is called" << endl;
+//     }
+//     void E()
+//     {
+//         cout << "E function of derived is called" << endl;
+//     }
+//     void F()
+//     {
+//         cout << "F function of derived is called" << endl;
+//     }
+// };
+/*
+    INHERITANCE AND REF BINDING :
+
+    HERE THE DERIVED CLASS IS TAKING SOME FUNCTIONALITIES
+
+    FROM THE BASE CLASS WHICH ARE VIRTUAL  AND IMPLEMENTING
+
+    ITS OWN VERSION..
+
+    NOW IN REF BINDING :
+
+    when we create a ref of some parent object with some child
+
+    object like Base &b = Derived d;
+
+
+    here b is a ref of Derived D class but we can access only
+
+    the functionalities that are present in Base / parent class but
+
+    incase if any functions are virtual in base class and since
+
+    this is a ref of derived class at runtime it will execute
+
+    the functionality present in derived class instead of Base class.
+
+
+*/
+class Base
 {
 public:
-    void Sound()
+    virtual void A()
     {
-        cout << "No Sound" << endl;
+        cout << "A function of Base is called " << endl;
     }
-    ~Animal()
+    void B()
     {
-        cout << "DESTRUCTOR OF ANIMAL IS CALLED" << endl;
+        cout << "B function of Base is called" << endl;
+    }
+    void C()
+    {
+        cout << "C function of Base is called" << endl;
     }
 };
-class Cat : public Animal
+class Derived : public Base
 {
 public:
-    void Sound()
+    void A()
     {
-        cout << "Meow Meow " << endl;
+        cout << "A function of derived is called" << endl;
     }
-    ~Cat()
+    void E()
     {
-        cout << "DESTRUCTOR OF CAT IS CALLED" << endl;
+        cout << "E function of derived is called" << endl;
     }
-};
-class Kitten : public Cat
-{
-public:
-    void Sound()
+    void F()
     {
-        cout << "Small Meow Meow Meow Meow" << endl;
-    }
-    ~Kitten()
-    {
-        cout << "DESTRUCTOR OF KITTEN IS CALLED" << endl;
+        cout << "F function of derived is called" << endl;
     }
 };
 
@@ -349,9 +466,7 @@ signed main()
 {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    Cat *cat_ptr = new Cat();
-    Animal &animal_ref = *cat_ptr;
-    Animal *animal_ptr = &animal_ref;
-    animal_ptr->Sound();
+    Derived D;
+    D.A();
     return 0;
 }
