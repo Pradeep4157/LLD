@@ -16,6 +16,10 @@ using namespace std;
 
         when Object1 gets deleted Object2 also gets deleted.
 
+        member's parameterized constructor should be called in the constructor of Base class.
+
+
+
 
 
 20:24
@@ -23,20 +27,34 @@ using namespace std;
 
 
 */
-
+class Derived
+{
+public:
+    void solve() {}
+    ~Derived()
+    {
+        cout << "~ Derived " << endl;
+    }
+};
 class Heart
 {
 public:
+    Heart(string name) : person_name(name) {}
     void Beats();
     ~Heart()
     {
-        cout << "~Heart" << endl;
+        cout << "~Heart" << " : " << person_name << endl;
     }
+
+private:
+    string person_name;
+    Derived deri;
 };
 // Object 1
 class Human
 {
 public:
+    Human() : heart_("Pradeep") {}
     void Breathe();
     void Walk();
     ~Human()
