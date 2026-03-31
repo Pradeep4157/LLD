@@ -10,6 +10,16 @@ using namespace std;
 
     Eg : A house can belong to more than 1 person. Even if Person obj is destroyed that doesnt mean house is also destroyed.
 
+    So for aggregations instead of creating objects inside the Parent class i.e., instead of making member variables.
+
+    We give pointers of that object to the required classes.
+
+    It is similar to 1 ->  many relationship where 1 is home and many are the people that own the home ..
+
+    home doesnt know how many person have the pointer to  this home or how many are deleted
+
+    But Each of the person knows the amount of houses it has.
+
 
     37:08
 
