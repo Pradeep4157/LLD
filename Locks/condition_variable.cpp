@@ -2,7 +2,9 @@
 #include <chrono>
 using namespace std;
 /*
+    Spurious Wakeup : when thread waiting on a condition wakes up even though no thread signaled (notify_one) or
 
+    broadcasted (notify_all) it.
 */
 bool done = false;
 std::queue<int> q;
