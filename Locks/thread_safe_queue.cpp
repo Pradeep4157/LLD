@@ -22,7 +22,7 @@ public:
         }
         cv_.notify_one();
     }
-    int pop(int x)
+    int pop()
     {
         std::unique_lock<std::mutex> lk(mu_);
         cv_.wait(lk, [this]
@@ -34,6 +34,24 @@ public:
 };
 int main()
 {
+    ThreadSafeQueue tsq;
+
+    std::thread Producer([&]
+                         {
+        for(int i = 1; i <= 10; i++){
+            tsq.push(i);
+            std::cout << "Produced " << i << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        } });
+    std::thread Consumer([&]
+                         {
+        for(int i = 1; i <= 10; i++){
+            int v = tsq.pop();
+            std::cout << "Consumed " << v << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        } });
+    Producer.join();
+    Consumer.join();
 
     return 0;
 }
