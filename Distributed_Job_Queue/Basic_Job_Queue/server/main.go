@@ -4,12 +4,28 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"io"
+	"sync"
+	
+	// "io"
+	
 )
-var jobQueue []string
+var wg sync.WaitGroup
+
+
+
+var jobQueue = []string{"job1", "job2", "job3", "job4", "job5"}
+
 func main() {
 	// when any request comes on /job handleJob function is going to be executed.. 
-	http.HandleFunc("/job", handleJob)
+	
+	// http.HandleFunc("/job", handleJob)
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go handleJob()
+		
+	}
+	wg.Wait()
+	fmt.Println("Done calling the functions")
 	// just printing on console..
 	fmt.Println("Queue Server running on port 8080")
 	// starts server on port 8080
@@ -18,18 +34,27 @@ func main() {
 
 // function is executed whenever any request comes on /job endpoint..
 // r is info regarding incoming request, w allows us to send some response back to client.. 
-func handleJob(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received a Job!")
+func handleJob() {
+	defer wg.Done()
+	
+	job := jobQueue[0]
+	jobQueue = jobQueue[1:]
+	// now we have the job, we will maybe store who took the job ?
+	fmt.Println("Worker got: ", job)
+	fmt.Println("Woker finished")
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read request", http.StatusBadRequest)
-		return
-	}
-	job := string(body)
-	jobQueue = append(jobQueue, job)
+
+	// body, err := io.ReadAll(r.Body)
+	// if err != nil {
+	// 	http.Error(w, "Failed to read request", http.StatusBadRequest)
+	// 	return
+	// }
+	// job := string(body)
+	// jobQueue = append(jobQueue, job)	
 
 	// here we are sending the response back to client, []byte is just that we convert the string in response as
 	// array of byte and return.. 
-	w.Write([]byte("Job received"))
+	// w.Write([]byte("Job received"))
+	fmt.Println("Done with function")
+	
 }
