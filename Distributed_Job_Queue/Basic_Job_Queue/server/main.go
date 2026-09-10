@@ -1,60 +1,65 @@
-// every go file belongs to package, main means that it is an executable program.. 
+// threads (Worker function) here are just functions created that run on while loop till all the jobs are finished.. 
 package main
-// fmt is for printing things and http is for creating an http server..
+
 import (
 	"fmt"
-	"net/http"
 	"sync"
-	
-	// "io"
-	
+	"time"
+	"net/http"
 )
-var wg sync.WaitGroup
 
+var (
+	mu sync.Mutex
+	jobQueue = []string{"job1", "job2", "job3", "job4", "job5", "job6", "job7", "job8", "job9"}
+	wg sync.WaitGroup
 
+)
 
-var jobQueue = []string{"job1", "job2", "job3", "job4", "job5"}
-
-func main() {
-	// when any request comes on /job handleJob function is going to be executed.. 
-	
-	// http.HandleFunc("/job", handleJob)
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go handleJob()
-		
-	}
-	wg.Wait()
-	fmt.Println("Done calling the functions")
-	// just printing on console..
-	fmt.Println("Queue Server running on port 8080")
-	// starts server on port 8080
-	http.ListenAndServe(":8080", nil)
+func addJob(w http.ResponseWriter, r*http.Request)() {
+	mu.Lock()
+	defer mu.Unlock()
+	jobQueue = append(jobQueue, "new_job")
 }
 
-// function is executed whenever any request comes on /job endpoint..
-// r is info regarding incoming request, w allows us to send some response back to client.. 
-func handleJob() {
-	defer wg.Done()
-	
+func getJob() (string, bool) {
+	// lock this so that job gets assinged to only 1 worker..
+	mu.Lock()
+	// and unlock once the job is assigned to some worker... 
+	defer mu.Unlock()
+	if len(jobQueue) == 0 {
+		return "", false
+	}
 	job := jobQueue[0]
 	jobQueue = jobQueue[1:]
-	// now we have the job, we will maybe store who took the job ?
-	fmt.Println("Worker got: ", job)
-	fmt.Println("Woker finished")
+	return job, true
+
+}
 
 
-	// body, err := io.ReadAll(r.Body)
-	// if err != nil {
-	// 	http.Error(w, "Failed to read request", http.StatusBadRequest)
-	// 	return
-	// }
-	// job := string(body)
-	// jobQueue = append(jobQueue, job)	
+func worker(id int) {
+	defer wg.Done()
+	for {
+		job, ok := getJob()
+		// worker did not get any job so we will exit.. 
+		if !ok {
+			// fmt.Printf("Worker %d: no more jobs, existing\n", id)
+			// return;
+		} else {
+			fmt.Printf("Worker %d: processing %s\n", id, job)
+			time.Sleep(500 * time.Millisecond) // trying to simulate work.. 
+			fmt.Printf("Worker %d, finished %s\n", id, job)
+		}
+	}
+}
 
-	// here we are sending the response back to client, []byte is just that we convert the string in response as
-	// array of byte and return.. 
-	// w.Write([]byte("Job received"))
-	fmt.Println("Done with function")
-	
+func main() {
+
+	for i := 1; i <= 3; i++ {
+		wg.Add(1)
+		go worker(i)	
+	}
+	// wg.Wait()
+	http.HandleFunc("/addjob", addJob)
+	http.ListenAndServe(":8080", nil)
+	fmt.Println("All jobs are done")
 }
