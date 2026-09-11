@@ -1,65 +1,42 @@
-// threads (Worker function) here are just functions created that run on while loop till all the jobs are finished.. 
 package main
 
 import (
 	"fmt"
-	"sync"
-	"time"
 	"net/http"
-)
-
-var (
-	mu sync.Mutex
-	jobQueue = []string{"job1", "job2", "job3", "job4", "job5", "job6", "job7", "job8", "job9"}
-	wg sync.WaitGroup
+	"time"
 
 )
-
-func addJob(w http.ResponseWriter, r*http.Request)() {
-	mu.Lock()
-	defer mu.Unlock()
-	jobQueue = append(jobQueue, "new_job")
-}
-
-func getJob() (string, bool) {
-	// lock this so that job gets assinged to only 1 worker..
-	mu.Lock()
-	// and unlock once the job is assigned to some worker... 
-	defer mu.Unlock()
-	if len(jobQueue) == 0 {
-		return "", false
-	}
-	job := jobQueue[0]
-	jobQueue = jobQueue[1:]
-	return job, true
-
-}
-
+// it will allow only 100 http requests buffer when all go routines are busy,
+// when an 101th request comes and still all worker threads / goroutines are
+// busy it would block the incoming HTTP request..
+var jobs = make(chan string, 100)
 
 func worker(id int) {
-	defer wg.Done()
-	for {
-		job, ok := getJob()
-		// worker did not get any job so we will exit.. 
-		if !ok {
-			// fmt.Printf("Worker %d: no more jobs, existing\n", id)
-			// return;
-		} else {
-			fmt.Printf("Worker %d: processing %s\n", id, job)
-			time.Sleep(500 * time.Millisecond) // trying to simulate work.. 
-			fmt.Printf("Worker %d, finished %s\n", id, job)
-		}
+// channel is like an open ended pipe, range jobs means that keep waiting 
+// for the next value forever. If the channel is empty block and sleep until
+// some new value arrives or someone explicitely closes the channel 	
+	for job := range jobs {
+		fmt.Printf("Worker %d: Processing %s\n", id, job)
+		time.Sleep(500 * time.Millisecond)
+		fmt.Printf("Worker %d finished job %s\n", id, job)
 	}
 }
 
-func main() {
-
-	for i := 1; i <= 3; i++ {
-		wg.Add(1)
-		go worker(i)	
+func addJob(w http.ResponseWriter, r *http.Request) {
+	body, err := r.body()
+	if err != nil {
+		http.Error(w, "failed to read job", http.StatusBadRequest)
+		return
 	}
-	// wg.Wait()
-	http.HandleFunc("/addjob", addJob)
+	jobs <- string(body)
+	w.Write([]byte("Job added"))
+}
+
+func main() { 
+	for i:= 1; i <= 3; i++ {
+		go worker(i)
+	}
+	http.HandleFunc("/addJob", addJob)
 	http.ListenAndServe(":8080", nil)
-	fmt.Println("All jobs are done")
+
 }
