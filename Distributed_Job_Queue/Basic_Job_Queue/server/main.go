@@ -4,39 +4,66 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
+	"sync"
+	"sync/atomic"
 )
-// it will allow only 100 http requests buffer when all go routines are busy,
-// when an 101th request comes and still all worker threads / goroutines are
-// busy it would block the incoming HTTP request..
-var jobs = make(chan string, 100)
 
-func worker(id int) {
-// channel is like an open ended pipe, range jobs means that keep waiting 
-// for the next value forever. If the channel is empty block and sleep until
-// some new value arrives or someone explicitely closes the channel 	
-	for job := range jobs {
-		fmt.Printf("Worker %d: Processing %s\n", id, job)
-		time.Sleep(500 * time.Millisecond)
-		fmt.Printf("Worker %d finished job %s\n", id, job)
-	}
+type JobState string
+
+const (
+	StatePending JobState = "pending"
+	StateProcessing JobState = "processing"
+	StateDone JobState = "done"
+)
+
+type Job struct {
+	Id int
+	Data string
 }
+
+var (
+	jobs = make(chan Job, 100)
+	jobStatus = make(map[int]JobState)
+	statusMu sync.Mutex
+	nextId int64
+)
 
 func addJob(w http.ResponseWriter, r *http.Request) {
-	body, err := r.body()
-	if err != nil {
-		http.Error(w, "failed to read job", http.StatusBadRequest)
-		return
+	// we just take the global nextId variable and use that to assign new job id 
+	// to this new incoming job..
+	id := int(atmoic.AddInt64(&nextId, 1))
+	// now we use this id to add a new job to the map.. 
+	statusMu.Lock()
+	jobStatus[id] = StatePending
+	statusMu.Unlock()
+	// adding this job to the go channel..
+	select {
+
+	case jobs <- Job{ id: id, Data: "new_job"}
+		fmt.Printf(w, "Job added id = %d", id)
+	default:
+		statusMu.Lock()
+		delete(jobStatus,id)
+		statusMu.Unlock()
+		http.Error(w, "queue is full, try again later", http.StatusServiceUnavailable)
 	}
-	jobs <- string(body)
-	w.Write([]byte("Job added"))
+}
+func worker(workerId int) {
+	// its going to wait in front of the go channel if it gets some job
+	// it will process and just update the status to done..
+	for job := range jobs {
+		// we need to update the map that we are processing this job..
+		statusMu.Lock()
+		jobStatus[job.Id] = StateProcessing
+		statusMu.Unlock()
+		// now i will process it parallely..
+		fmt.Printf("Worker %d, is procesing Job with id : %d\n",workerId, job.Id)
+		time.Sleep(50 * time.Millisecond)
+		statusMu.Lock()
+		jobStatus[job.Id] = StatusDone
+		statusMu.Unlock()
+		fmt.Printf("Worker %d has completed processing Job with id : %d\n", wokerId, job.Id)
+
+	}
 }
 
-func main() { 
-	for i:= 1; i <= 3; i++ {
-		go worker(i)
-	}
-	http.HandleFunc("/addJob", addJob)
-	http.ListenAndServe(":8080", nil)
-
-}
