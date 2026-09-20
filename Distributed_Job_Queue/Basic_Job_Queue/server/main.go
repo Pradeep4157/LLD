@@ -34,6 +34,39 @@ var (
 	nextId int64
 )
 
+
+
+// ackJob function for ack instead of worker doing it by itself..
+
+func ackJob(id int) error {
+	inFlightMu.Lock()
+	defer inFlightMu.Unlock()
+	if _, exists := inFlight[id]; !exists {
+		return fmt.Errorf("job %d, not in-Flight (already acked, timed out or invalid)", id)
+	}
+	delete(inFlight, id)
+	statusMu.Lock()
+	jobStatus[id] = StateDone
+	statusMu.Unlock()
+	return nil
+}
+
+// ackhandler for ack from some other source.. 
+func ackHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	var id int 
+	_, err := fmt.Sscanf(idStr, "%d", &id)
+	if err != nil { 
+		http.Error(w, "Error while parsing id", http.StatusBadRequest)
+		return
+	}
+	if err := ackJob(id); err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+	fmt.Fprintf(w, "job %d acked", id)
+}
+
 // now i define the worker..
 
 func worker(id int) {
@@ -50,19 +83,18 @@ func worker(id int) {
 		fmt.Printf("Worker %d is processing job : %d", id, job.Id)
 		time.Sleep(500 * time.Millisecond)
 
-		// job done !!
-		inFlightMu.Lock()
-		delete(inFlight, job.Id)
-		inFlightMu.Unlock()
 
-		statusMu.Lock()
-		jobStatus[job.Id] = StateDone
-		statusMu.Unlock()
-
+		if err := ackJob(job.Id); err != nil {
+			fmt.Printf("Worker %d failed to ack job %d: %v", id, job.Id, err)
+			continue
+		}
+		
 		fmt.Printf("Worker %d finished job %d\n", id, job.Id)
 
 	}
 }
+
+
 
 func watchdog() { 
 	// if any job is there for a very long time then it will mark it as failed and queue that job again.. 
@@ -80,7 +112,6 @@ func watchdog() {
 				retryJobs = append(retryJobs, ifj.Job)
 				// now we need to send request to add this job again to the channel.. 
 				delete(inFlight, id)
-				// jobs <- ifj.Job
 			}
 		}
 		inFlightMu.Unlock()
@@ -137,5 +168,6 @@ func main() {
 	fmt.Println("Watchdog has been deployed")
 	http.HandleFunc("/addjob", addJob)
 	http.HandleFunc("/status", JobStatusHandler)
+	http.HandleFunc("/ack", ackHandler)
 	http.ListenAndServe(":8080", nil)
 }
