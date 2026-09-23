@@ -83,7 +83,7 @@ func worker(id int) {
 		fmt.Printf("Worker %d is processing job : %d", id, job.Id)
 		time.Sleep(500 * time.Millisecond)
 
-
+		// ack not done by worker.. 
 		if err := ackJob(job.Id); err != nil {
 			fmt.Printf("Worker %d failed to ack job %d: %v", id, job.Id, err)
 			continue
