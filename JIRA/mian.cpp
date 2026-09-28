@@ -52,11 +52,9 @@ public:
         title = title_;
         description = description_;
         status = TaskStatus::TODO;
+        assigneeUserId = -1;
     }
-    void changeTaskStatus(TaskStatus newStatus)
-    {
-        status = newStatus;
-    }
+
     int getId()
     {
         return id;
@@ -96,15 +94,36 @@ public:
         tasks.push_back(newTask);
     }
 
-    void assignTask(int taskId, int userId)
+    bool assignTask(int taskId, int userId)
     {
+        if (memberExists(userId) == false)
+            return false;
         for (auto &task : tasks)
         {
             if (task->getId() == taskId)
             {
                 task->assignUser(userId);
+                return true;
             }
         }
+        return false;
+    }
+    bool deleteTask(int taskId)
+    {
+        int index = -1;
+        for (int i = 0; i < tasks.size(); i++)
+        {
+            if (tasks[i]->getId() == taskId)
+            {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1)
+            return false;
+        delete tasks[index];
+        tasks.erase(tasks.begin() + index);
+        return true;
     }
 
     bool taskExists(int taskId)
@@ -116,15 +135,13 @@ public:
         }
         return false;
     }
-    void changeTaskStatus(int taskId, TaskStatus newStatus)
+    bool changeTaskStatus(int taskId, TaskStatus newStatus)
     {
-        for (auto &task : tasks)
-        {
-            if (task->getId() == taskId)
-            {
-                task->changeStatus(newStatus);
-            }
-        }
+        Task *task = getTask(taskId);
+        if (task == nullptr)
+            return false;
+        task->changeStatus(newStatus);
+        return true;
     }
     Task *getTask(int taskId)
     {
@@ -135,6 +152,7 @@ public:
                 return task;
             }
         }
+        return nullptr;
     }
 
     //.......................Members..........................................
@@ -181,8 +199,8 @@ private:
     int nextProjectId;
     int nextTaskId;
     int nextUserId;
-    int id;
-    string name;
+    // int id;
+    // string name;
     vector<Task *> tasks;
     vector<Project *> projects;
     vector<User *> users;
@@ -197,13 +215,14 @@ public:
     // .................................User...............................................
     int createUser(const string &name)
     {
-        int newUserId = nextUserId++;
+        int newUserId = nextUserId + 1;
+        nextUserId++;
         User *newUser = new User(nextUserId, name);
+        users.push_back(newUser);
         return newUserId;
     }
     bool userExists(int userId)
     {
-        bool found = false;
         for (auto &user : users)
         {
             if (user->getId() == userId)
@@ -244,9 +263,21 @@ public:
         {
             if (user->getId() == userId)
             {
+                if (project->memberExists(userId))
+                    return false;
                 project->addMember(user);
                 return true;
             }
+        }
+        return false;
+    }
+
+    bool memberExists(int memberId)
+    {
+        for (auto &member : users)
+        {
+            if (member->getId() == memberId)
+                return true;
         }
         return false;
     }
@@ -263,8 +294,10 @@ public:
             if (user->getId() == userId)
             {
                 project->removeMember(user);
+                return true;
             }
         }
+        return false;
     }
 
     //....................Task.............................................
@@ -272,58 +305,66 @@ public:
     int createTask(int projectId, string title, string description, TaskPriority priority)
     {
         Project *project = getProject(projectId);
-        for (auto &project : projects)
-        {
-            int currentId = project->getId();
-            if (currentId == projectId)
-            {
-                // this is the project where we need to add this new task..
-                int newTaskId = nextTaskId;
-                taskToProject[newTaskId] = projectId;
-                nextTaskId++;
-                project->addTask(newTaskId, title, description, priority);
-            }
-        }
+        if (project == nullptr)
+            return -1;
+        int newTaskId = nextTaskId;
+        nextTaskId++;
+        project->addTask(newTaskId, title, description, priority);
+        return newTaskId;
     }
 
-    Task *getTask(int taskId)
+    bool assignTask(int taskId, int userId)
     {
-    }
-    void assignTask(int taskId, int userId)
-    {
-        int projectId = taskToProject[taskId];
-        for (auto &project : projects)
-        {
-            int currentId = project->getId();
-            if (currentId == projectId)
-            {
-                // send the data..
-                project->assignTask(taskId, userId);
-            }
-        }
-    }
-    void changeTaskStatus(int taskId, TaskStatus newStatus)
-    {
-        int projectId = taskToProject[taskId];
-        for (auto &project : projects)
-        {
-            if (project->getId() == projectId)
-            {
-                project->changeTaskStatus(taskId, newStatus);
-            }
-        }
-    }
-    Task *getTask(int taskId)
-    {
-        Task *task;
+        if (!memberExists(userId))
+            return false;
+        Project *currentProject = nullptr;
         for (auto &project : projects)
         {
             if (project->taskExists(taskId))
             {
-                task = project->getTask(taskId);
+                currentProject = project;
+                break;
             }
         }
-        return task;
+        if (currentProject == nullptr)
+            return false;
+        return currentProject->assignTask(taskId, userId);
+    }
+    bool changeTaskStatus(int taskId, TaskStatus newStatus)
+    {
+        Task *currentTask = getTask(taskId);
+        if (currentTask == nullptr)
+            return false;
+        currentTask->changeStatus(newStatus);
+        return true;
+    }
+    Task *getTask(int taskId)
+    {
+        Task *task = nullptr;
+        for (auto &project : projects)
+        {
+            if (project->taskExists(taskId))
+            {
+                return project->getTask(taskId);
+            }
+        }
+        return nullptr;
+    }
+
+    bool deleteTask(int taskId)
+    {
+        Project *currentProject = nullptr;
+        for (auto &project : projects)
+        {
+            if (project->taskExists(taskId))
+            {
+                currentProject = project;
+                break;
+            }
+        }
+        if (currentProject == nullptr)
+            return false;
+        return currentProject->deleteTask(taskId);
     }
 };
 
